@@ -1,0 +1,23 @@
+cluster-config: 'profiles/wynton-qsub/cluster.yaml'
+jobscript: 'profiles/wynton-qsub/jobscript.sh'
+cluster-status: 'profiles/wynton-qsub/cluster_status.py'
+drmaa: " -cwd \
+        -v PATH \
+        -pe smp {cluster.procs} \
+        -l mem_free={cluster.mem_mb}M \
+        -l h_rt={cluster.walltime} \
+        -o {cluster.outdir} \
+        -j yes \
+        -terse \
+        "
+notemp: true
+local-cores: 6
+latency-wait: 60
+max-jobs-per-second: 10
+printshellcmds: true
+keep-going: true
+resources: 'network_connections=3'
+use-conda: true
+use-singularity: true
+config: 'MAX_THREADS=24'
+jobname: '{name}.{jobid}.snkjb'
