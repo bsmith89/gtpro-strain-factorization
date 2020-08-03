@@ -1,0 +1,20 @@
+# Always ignore
+.DS_Store
+*.swp
+.ipynb_checkpoints/
+*.pyc
+
+.snakemake/
+log
+raw
+ref
+data
+build
+sdata
+smeta
+
+local.snake
+env_local
+config_local.yaml
+
+nb/profile_default
