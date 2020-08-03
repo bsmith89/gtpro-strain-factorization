@@ -35,10 +35,10 @@ dependencies:
   - bx-python=0.8.9=py37h029c07a_1
   - bzip2=1.0.8=h516909a_2
   - c-ares=1.16.1=h516909a_0
-  - ca-certificates=2020.6.20=hecda079_0
+  - ca-certificates=2020.6.24=0
   - cachetools=4.1.1=py_0
   - cairo=1.16.0=hcf35c78_1003
-  - certifi=2020.6.20=py37hc8dfbb8_0
+  - certifi=2020.6.20=py37_0
   - cffi=1.14.1=py37h2b28604_0
   - cftime=1.2.1=py37h03ebfcd_0
   - chardet=3.0.4=py37hc8dfbb8_1006
@@ -110,6 +110,7 @@ dependencies:
   - importlib-metadata=1.7.0=py37hc8dfbb8_0
   - importlib_metadata=1.7.0=0
   - iniconfig=1.0.1=pyh9f0ad1d_0
+  - intel-openmp=2020.1=217
   - ipykernel=5.3.4=py37h43977f1_0
   - ipython=7.17.0=py37hc6149b9_0
   - ipython_genutils=0.2.0=py_1
@@ -181,9 +182,11 @@ dependencies:
   - matplotlib-base=3.3.0=py37hd478181_1
   - mccabe=0.6.1=py_1
   - mistune=0.8.4=py37h8f50634_1001
+  - mkl=2020.1=217
+  - mkl-service=2.3.0=py37he904b0f_0
   - more-itertools=8.4.0=py_0
   - multidict=4.7.5=py37h8f50634_1
-  - nbconvert=5.6.1=py37hc8dfbb8_1
+  - nbconvert=5.6.1=py37_1
   - nbformat=5.0.7=py_0
   - nbsphinx=0.7.1=pyh9f0ad1d_0
   - ncurses=6.2=he1b5a44_1
@@ -198,7 +201,7 @@ dependencies:
   - numpydoc=1.1.0=pyh9f0ad1d_0
   - olefile=0.46=py_0
   - openjpeg=2.3.1=h981e76c_3
-  - openssl=1.1.1g=h516909a_1
+  - openssl=1.1.1g=h7b6447c_0
   - packaging=20.4=pyh9f0ad1d_0
   - pandas=1.1.0=py37h3340039_0
   - pandoc=2.10.1=h516909a_0
