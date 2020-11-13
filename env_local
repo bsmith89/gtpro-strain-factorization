@@ -1,1 +1,1 @@
-conda activate desman-test
+conda activate YOUR_LOCAL_CONDA_ENV

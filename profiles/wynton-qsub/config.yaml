@@ -1,10 +1,9 @@
-cluster-config: 'profiles/wynton-qsub/cluster.yaml'
-jobscript: 'profiles/wynton-qsub/jobscript.sh'
-cluster-status: 'profiles/wynton-qsub/cluster_status.py'
+cluster-config: 'profiles/qsub/cluster.yaml'
+jobscript: 'profiles/qsub/jobscript.sh'
 drmaa: " -cwd \
         -v PATH \
         -pe smp {cluster.procs} \
-        -l mem_free={cluster.mem_mb}M \
+        -l mem_free={cluster.pmem}M \
         -l h_rt={cluster.walltime} \
         -o {cluster.outdir} \
         -j yes \

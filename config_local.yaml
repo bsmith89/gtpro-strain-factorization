@@ -1,3 +1,1 @@
-iggsearch: '/pollard/home/bsmith/Projects/IGGsearch'
-midasigg: '/pollard/home/bsmith/Projects/MIDAS-IGGdb'
-iggdb: '/pollard/data/IGGdb/'
+# Put local config assignments here; e.g. the locations of databases.
