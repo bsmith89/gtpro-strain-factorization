@@ -10,9 +10,10 @@ A Snakemake project template.
 4. `ln -fs doc/notes.md README.md` (optional)
 6. Create conda environment and install Snakemake (at a minimum).
 7. Edit `env_local` to activate this environment.
-7. `source env`
-5. `smake -j1 initialize_project`
+8. `source env`
+9. `smake -j1 initialize_project`
 10. Install any other required packages/software, e.g. `conda/default.yaml`
+11. `git rm --cached env_local config_local.yaml snake/local.snake`
 
 # TODO:
 
