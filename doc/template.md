@@ -7,7 +7,7 @@ A Snakemake project template.
 1. Clone this repository.
 2. `git remote rename origin template`
 3. `git checkout -b master`
-4. `ln -s doc/NOTES.md README.md` (optional)
+4. `ln -fs doc/notes.md README.md` (optional)
 6. Create conda environment and install Snakemake (at a minimum).
 7. Edit `env_local` to activate this environment.
 7. `source env`
