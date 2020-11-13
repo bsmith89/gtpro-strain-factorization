@@ -8,8 +8,11 @@ A Snakemake project template.
 2. `git remote rename origin template`
 3. `git checkout -b master`
 4. `ln -s doc/NOTES.md README.md` (optional)
+6. Create conda environment and install Snakemake (at a minimum).
+7. Edit `env_local` to activate this environment.
+7. `source env`
 5. `smake -j1 initialize_project`
-6. Create conda environment and install necessary packages.
+10. Install any other required packages/software, e.g. `conda/default.yaml`
 
 # TODO:
 
