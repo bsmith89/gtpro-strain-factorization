@@ -1,5 +1,5 @@
 notemp: true
-printshellcmds: true
+printshellcmds: false
 keep-going: true
 resources: ['network_connections=3', 'mem_mb=250000']
 use-conda: true
