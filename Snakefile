@@ -86,7 +86,9 @@ rule initialize_project:
 
 rule start_jupyter:
     threads: MAX_THREADS
-    shell: limit_numpy_procs + 'jupyter notebook --config=nb/jupyter_notebook_config.py --notebook-dir=nb/'
+    params:
+        port=config['jupyter_port']
+    shell: limit_numpy_procs + 'jupyter notebook --config=nb/jupyter_notebook_config.py --notebook-dir=nb/ --port={params.port}'
 
 rule start_ipython:
     threads: MAX_THREADS
