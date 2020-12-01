@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 remote='pollard-bueno'
-project='Projects/ucfmt'
+project='Projects/gtpro-strain-deconv'
 
 for path in $@
 do
