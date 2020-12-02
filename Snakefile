@@ -48,9 +48,14 @@ wildcard_constraints:
 configfile: 'config.yaml'
 configfile: 'config_local.yaml'
 
-MAX_THREADS = 99
 if 'MAX_THREADS' in config:
     MAX_THREADS = config['MAX_THREADS']
+else:
+    MAX_THREADS = 99
+if 'USE_CUDA' in config:
+    USE_CUDA = config['USE_CUDA']
+else:
+    USE_CUDA = 0
 
 # {{{2 Project Configuration
 
@@ -191,6 +196,25 @@ awk -v OFS='\t' '$2!="" && $3!="" {{print $1,"core"}}' < {input} > {output}
 
 # {{{1 Process data
 
+rule gtpro_process_raw_ucfmt_reads:
+    output: 'data/{stem}.gtpro.gz'
+    input: 'data/{stem}.fq.gz'
+    params:
+        db_l=32,
+        db_m=36,
+        db_stem=config['gtpro_dbstem']
+    threads: 4
+    resources:
+        mem_mb=60000,
+        pmem=60000 // 4,
+    shell:
+        """
+        zcat {input} \
+                | gt_pro -t {threads} -l {params.db_l} -m {params.db_m} -d {params.db_stem} \
+                | gzip -c \
+            > {output}
+        """
+
 # Helper rule that pre-formats paths from library_id to r1 and r2 paths.
 rule helper_build_library_path_table:
     output: 'data/{library_group}/library_to_path.tsv',
@@ -225,8 +249,8 @@ rule count_species_lines_from_one_read:
 
         """
 
-# FIXME: There must be a better way to work with filenames!
-rule merge_species_count_data_from_one_read:
+# Selects a single species from every file and concatenates.
+rule concatenate_all_libraries_one_read_count_data_from_one_species:
     output: 'data/{library_group}/{species}/gtpro.read_r{r}.tsv.bz2'
     input:
         script='scripts/select_gtpro_species_lines.sh',
@@ -246,6 +270,17 @@ rule merge_species_count_data_from_one_read:
 
         """
 
+rule merge_both_reads_species_count_data:
+    output: 'data/{library_group}/{species}/gtpro.nc'
+    input:
+        script='scripts/merge_gtpro_to_netcdf.py',
+        r1='data/{library_group}/{species}/gtpro.read_r1.tsv.bz2',
+        r2='data/{library_group}/{species}/gtpro.read_r2.tsv.bz2',
+    shell:
+        """
+        {input.script} {input.r1} {input.r2} {output}
+        """
+
 # rule coverage_filter_allele_counts:
 #     output: '{stem}.merge_reads.filt.tsv.bz2'
 #     input:
@@ -256,3 +291,28 @@ rule merge_species_count_data_from_one_read:
 #         {input.script} {input.tsv} > {output}
 #
         # """
+
+rule factorize_strains:
+    output: '{stem}gtpro.sfacts.nc'
+    input:
+        script='scripts/strain_facts.py',
+        pileup='{stem}gtpro.nc',
+    params:
+        device={0: 'cpu', 1: 'cuda'}[config['USE_CUDA']]
+    threads: 4
+    resources:
+        gpu={0: 0, 1: 1}[config['USE_CUDA']],
+        vmem={0: 0, 1: 10000}[config['USE_CUDA']],
+    shell:
+        """
+        scripts/strain_facts.py \
+                --cvrg-thresh 0.05 \
+                --nstrain 3000 \
+                --npos 2000 \
+                --device {params.device} \
+                --learning-rate 5e-2 \
+                --stop-at 1 \
+                --outpath {output} \
+                {input.pileup}
+
+        """

@@ -1,3 +1,4 @@
 _library: 'meta/library.tsv'
 _library_group: 'meta/library_group.tsv'
 _sample: 'meta/sample.tsv'
+gtpro_dbstem: '/pollard/data/gt-pro-db/20190723_881species'

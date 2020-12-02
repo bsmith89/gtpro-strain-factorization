@@ -1,10 +1,12 @@
 __default__:
   walltime: 00:29:59
-  mem_mb: 8192
+  pmem: 8192
   procs: '{threads}'
   outdir: 'log'
   errdir: 'log'
-co_assemble_mgen:
-  walltime: 168:00:00
-  procs: 16
-  mem_mb: '{resources.pmem}'
+  extra_qsub_flags: ''
+factorize_strains:
+  procs: 1
+  walltime: '01:00:00'
+  extra_qsub_flags: '-q gpu.q -l compute_cap=61,gpu_mem={resources.vmem}M'
+  pmem: 8192

@@ -1,14 +1,3 @@
-cluster-config: 'profiles/qsub/cluster.yaml'
-jobscript: 'profiles/qsub/jobscript.sh'
-drmaa: " -cwd \
-        -v PATH \
-        -pe smp {cluster.procs} \
-        -l mem_free={cluster.pmem}M \
-        -l h_rt={cluster.walltime} \
-        -o {cluster.outdir} \
-        -j yes \
-        -terse \
-        "
 notemp: true
 local-cores: 6
 latency-wait: 60
@@ -18,5 +7,17 @@ keep-going: true
 resources: 'network_connections=3'
 use-conda: true
 use-singularity: true
-config: 'MAX_THREADS=24'
+config: ['MAX_THREADS=24', 'USE_CUDA=1']
+cluster-config: 'profiles/qsub/cluster.yaml'
+jobscript: 'profiles/qsub/jobscript.sh'
+drmaa: " -cwd \
+        -v PATH \
+        -pe smp {cluster.procs} \
+        -l mem_free={cluster.pmem}M \
+        -l h_rt={cluster.walltime} \
+        -o {cluster.outdir} \
+        {cluster.extra_qsub_flags} \
+        -j yes \
+        -terse \
+        "
 jobname: '{name}.{jobid}.snkjb'

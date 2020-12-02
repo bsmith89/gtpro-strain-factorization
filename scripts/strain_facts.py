@@ -2,6 +2,7 @@
 
 import sys
 import argparse
+import warnings
 
 import matplotlib.pyplot as plt
 from lib.util import info, idxwhere
@@ -159,9 +160,7 @@ def find_map(
             # Reporting/Breaking
             if i % 1 == 0:
                 if i < 2:
-                    pbar.set_postfix(
-                        {"ELBO": history[-1],}
-                    )
+                    pbar.set_postfix({"ELBO": history[-1]})
                 elif i < lag + 1:
                     pbar.set_postfix(
                         {
@@ -203,7 +202,8 @@ def parse_args(argv):
     p.add_argument(
         "pileup",
         help="""
-Single, fully processed, pileup table in NetCDF format with the following dimensions:
+Single, fully processed, pileup table in NetCDF format
+with the following dimensions:
     * library_id
     * position
     * read
@@ -279,12 +279,12 @@ Single, fully processed, pileup table in NetCDF format with the following dimens
     )
 
     # Fitting
-    p.add_argument("--random-seed", default=0, type=int, help=("TODO"))
-    p.add_argument("--max-iter", default=10000, type=int, help=("TODO"))
-    p.add_argument("--lag", default=50, type=int, help=("TODO"))
-    p.add_argument("--stop-at", default=5.0, type=float, help=("TODO"))
-    p.add_argument("--learning-rate", default=1e-0, type=float, help=("TODO"))
-    p.add_argument("--clip-norm", default=100.0, type=float, help=("TODO"))
+    p.add_argument("--random-seed", default=0, type=int, help=("FIXME"))
+    p.add_argument("--max-iter", default=10000, type=int, help=("FIXME"))
+    p.add_argument("--lag", default=50, type=int, help=("FIXME"))
+    p.add_argument("--stop-at", default=5.0, type=float, help=("FIXME"))
+    p.add_argument("--learning-rate", default=1e-0, type=float, help=("FIXME"))
+    p.add_argument("--clip-norm", default=100.0, type=float, help=("FIXME"))
 
     # Hardware
     p.add_argument("--device", default="cpu", help=("PyTorch device name."))
@@ -298,16 +298,27 @@ Single, fully processed, pileup table in NetCDF format with the following dimens
 
     args = p.parse_args(argv)
 
-    if args.outpath == None:
-        args.outpath = args.pileup + "_strain-facts.nc"
+    if args.outpath is None:
+        args.outpath = args.pileup + ".sfacts.nc"
 
     return args
 
 
 if __name__ == "__main__":
-    #     warnings.filterwarnings(
-    #         "ignore", category=UserWarning, module="pymc3.sampling", lineno=566
-    #     )
+    warnings.filterwarnings(
+        "error",
+        message="Encountered NaN: loss",
+        category=UserWarning,
+        # module="trace_elbo",  # FIXME: What is the correct regex for module?
+        lineno=217,
+    )
+    warnings.filterwarnings(
+        "ignore",
+        message="torch.tensor results are registered as constants",
+        category=torch.jit.TracerWarning,
+        # module="trace_elbo",  # FIXME: What is the correct regex for module?
+        lineno=65,
+    )
 
     args = parse_args(sys.argv[1:])
     info(args)
@@ -357,6 +368,7 @@ if __name__ == "__main__":
     n, g = m.shape
     y_obs = data_fit.sel(allele="alt")
     s = args.nstrains
+    info(f"Model shape: n={n}, g={g}, s={s}")
     model_fit = conditioned_model(
         model,
         data=dict(
@@ -382,7 +394,10 @@ if __name__ == "__main__":
         max_iter=args.max_iter,
         clip_norm=args.clip_norm,
     )
+    if args.device.startswith('cuda'):
+        torch.cuda.empty_cache()
 
+    info("Finished fitting model.")
     result = xr.Dataset(
         {
             "gamma": (["strain", "position"], mapest["gamma"]),
@@ -407,6 +422,7 @@ if __name__ == "__main__":
         ),
     )
 
+    info("Saving results.")
     result.to_netcdf(
         args.outpath,
         encoding=dict(
