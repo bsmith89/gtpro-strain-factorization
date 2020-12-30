@@ -61,17 +61,9 @@ def _write_netcdf(path, data, compression_level=DEFAULT_COMPRESSION_LEVEL):
 
 
 def _concat_reads_to_xr(r1, r2):
-    return (
-        pd.concat(
-            [
-                r1.to_frame("r1").rename_axis(columns="read").stack(),
-                r2.to_frame("r2").rename_axis(columns="read").stack(),
-            ]
-        )
-        .to_xarray()
-        .fillna(0)
-        .astype(int)
-    )
+    r1 = r1.to_frame("r1").rename_axis(columns="read").stack()
+    r2 = r2.to_frame("r2").rename_axis(columns="read").stack()
+    return pd.concat([r1, r2]).to_xarray().fillna(0).astype(int)
 
 
 if __name__ == "__main__":
@@ -93,6 +85,8 @@ if __name__ == "__main__":
 
     info("Concatenating reads")
     data = _concat_reads_to_xr(r1, r2)
+    info("Summing r1 and r2")
+    data = data.sum("read")
     info("Checking valid integer type")
     max_value = data.max()
     assert (

@@ -5,8 +5,11 @@ __default__:
   outdir: 'log'
   errdir: 'log'
   extra_qsub_flags: ''
-factorize_strains:
+factorize_strains:  # In wynton-qsub profile, USE_CUDA=1
   procs: 1
-  walltime: '01:00:00'
-  extra_qsub_flags: '-q gpu.q -l compute_cap=61,gpu_mem={resources.vmem}M'
-  pmem: 8192
+  extra_qsub_flags: '-q gpu.q -l compute_cap=61,gpu_mem={resources.gpu_mem_mb}M'
+# qsub_gpu_test:
+#   procs: 1
+#   walltime: '01:00:00'
+#   extra_qsub_flags: '-q gpu.q -l compute_cap=61,gpu_mem={resources.gpu_mem}M'
+#   pmem: 8192
