@@ -45,6 +45,8 @@ wildcard_constraints:
 
 # {{{2 General Configuration
 
+container: 'docker://bsmith89/compbio@sha256:5755ae1efa04bbb4f7994fbcab55d3d386a35e44d4546c8a1c01c7a62d7270cb'
+
 configfile: 'config.yaml'
 configfile: 'config_local.yaml'
 
@@ -98,6 +100,9 @@ rule start_jupyter:
 rule start_ipython:
     threads: MAX_THREADS
     shell: limit_numpy_procs + 'ipython'
+
+rule start_shell:
+    shell: 'bash'
 
 rule visualize_rulegraph:
     output: 'data/rulegraph.dot'

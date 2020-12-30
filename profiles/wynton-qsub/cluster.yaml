@@ -1,6 +1,6 @@
 __default__:
-  walltime: 00:29:59
-  pmem: 8192
+  walltime: '{resources.walltime_hr}:{resources.walltime_min}:{resources.walltime_sec}'
+  pmem: '{resources.pmem}'
   procs: '{threads}'
   outdir: 'log'
   errdir: 'log'

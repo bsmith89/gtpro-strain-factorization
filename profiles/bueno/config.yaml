@@ -3,6 +3,8 @@ printshellcmds: false
 keep-going: true
 resources: ['network_connections=3', 'mem_mb=250000']
 use-conda: true
-use-singularity: true
 conda-frontend: 'mamba'
+use-singularity: true
+singularity-args: "--bind /pollard/shattuck0/ --bind /pollard/data/ --bind /pollard/home/bsmith"
+singularity-prefix: "/pollard/home/bsmith/.snakemake/singularity"
 config: ['USE_CUDA=0', 'MAX_THREADS=24']

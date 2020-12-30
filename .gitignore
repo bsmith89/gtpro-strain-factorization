@@ -3,8 +3,15 @@
 *.swp
 .ipynb_checkpoints/
 *.pyc
+.bash_history
+.snakemake
+.conda
+.cache
+.ipython
+.jupyter
+.local
+.theano
 
-.snakemake/
 log
 raw
 ref
