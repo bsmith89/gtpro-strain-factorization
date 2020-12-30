@@ -2,6 +2,10 @@
 
 # {{{2 Imports
 
+from lib.snake import alias_recipe
+from lib.util import idxwhere
+import pandas as pd
+
 # {{{2 Constants
 
 limit_numpy_procs = \
@@ -32,18 +36,37 @@ float_noperiod_wc = '[0-9]+(e[0-9]+)?'
 single_param_wc = '[^.-]+'
 params_wc = noperiod_wc
 
+wildcard_constraints:
+    r='[12]',
+    library=noperiod_wc,
+    library_group=noperiod_wc,
+
 # {{{1 Configuration
 
 # {{{2 General Configuration
 
+container: 'docker://bsmith89/compbio@sha256:5755ae1efa04bbb4f7994fbcab55d3d386a35e44d4546c8a1c01c7a62d7270cb'
+
 configfile: 'config.yaml'
 configfile: 'config_local.yaml'
 
-MAX_THREADS = 99
 if 'MAX_THREADS' in config:
     MAX_THREADS = config['MAX_THREADS']
+else:
+    MAX_THREADS = 99
+if 'USE_CUDA' in config:
+    USE_CUDA = config['USE_CUDA']
+else:
+    USE_CUDA = 0
 
 # {{{2 Project Configuration
+
+# config['library_group'] = {}
+# _library_group = pd.read_table(
+#     config['_library_group'], index_col=['library_id'], squeeze=True
+# )
+# for library_group in _library_group.unique():
+#     config['library_group'][library_group] = idxwhere(_library_group == library_group)
 
 # {{{2 Configure default actions
 
@@ -69,11 +92,16 @@ rule initialize_project:
 
 rule start_jupyter:
     threads: MAX_THREADS
-    shell: limit_numpy_procs + 'jupyter notebook --config=nb/jupyter_notebook_config.py --notebook-dir=nb/'
+    params:
+        port=config['jupyter_port']
+    shell: limit_numpy_procs + 'jupyter notebook --config=nb/jupyter_notebook_config.py --notebook-dir=nb/ --port={params.port}'
 
 rule start_ipython:
     threads: MAX_THREADS
     shell: limit_numpy_procs + 'ipython'
+
+rule start_shell:
+    shell: 'bash'
 
 rule visualize_rulegraph:
     output: 'data/rulegraph.dot'

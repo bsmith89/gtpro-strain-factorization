@@ -4,7 +4,7 @@ from datetime import datetime
 
 def info(*msg):
     now = datetime.now()
-    print(f'[{now}]', *msg, file=sys.stderr)
+    print(f'[{now}]', *msg, file=sys.stderr, flush=True)
 
 
 def idxwhere(condition):

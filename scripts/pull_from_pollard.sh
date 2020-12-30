@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 remote='pollard-bueno'
-project='Projects/ucfmt'
+project='YOUR_PROJECT_PATH'
 
 for path in $@
 do
