@@ -5,7 +5,7 @@ A Snakemake project template.
 # Converting template into a project:
 
 1. Clone this repository.
-2. `git remote rename origin template`
+2. `git remote rename origin template-origin`
 3. `git checkout -b master`
 4. `ln -fs doc/notes.md README.md` (optional)
 6. Create conda environment and install Snakemake (at a minimum).
