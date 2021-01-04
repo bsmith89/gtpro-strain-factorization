@@ -1,0 +1,2 @@
+mgen_library_id	sample_id	plate_number	plate_well	filename_r1	filename_r2	mgen_library_notes
+test_mgen_library	test_sample			no-date/test_r1.fastq.gz	no-date/test_r2.fastq.gz	

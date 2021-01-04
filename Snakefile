@@ -61,12 +61,14 @@ else:
 
 # {{{2 Project Configuration
 
-# config['library_group'] = {}
-# _library_group = pd.read_table(
-#     config['_library_group'], index_col=['library_id'], squeeze=True
-# )
-# for library_group in _library_group.unique():
-#     config['library_group'][library_group] = idxwhere(_library_group == library_group)
+# TODO: Generalize this pattern of turning a AxB link table
+# into a dictionary of dictionaries.
+config['mgen_x_mgen_group'] = {}
+_mgen_x_mgen_group = pd.read_table(
+    config['_mgen_x_mgen_group'], index_col=['mgen_id'], squeeze=True
+)
+for mgen_group in _mgen_x_mgen_group.unique():
+    config['mgen_group'][mgen_group] = idxwhere(_mgen_x_mgen_group == mgen_group)
 
 # {{{2 Configure default actions
 
