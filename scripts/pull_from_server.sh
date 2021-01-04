@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-remote='pollard-bueno'
-project='YOUR_PROJECT_PATH'
+remote='HOST_NAME'
+project='Projects/THIS_PROJECT'
 
 for path in $@
 do
