@@ -20,7 +20,7 @@ build
 sdata
 smeta
 
-local.snake
+local.smk
 env_local
 config_local.yaml
 
