@@ -20,7 +20,7 @@ from itertools import product
 # {{{2 General Configuration
 
 
-container: "docker://bsmith89/compbio@sha256:5755ae1efa04bbb4f7994fbcab55d3d386a35e44d4546c8a1c01c7a62d7270cb"
+container: "docker://bsmith89/compbio@sha256:d91a06d7865a1313532acd9d35ab83ac1b904932ae93e1e3c936608dafddcf18"
 
 
 configfile: "config.yaml"
@@ -38,27 +38,23 @@ else:
 
 # {{{2 Data Configuration
 
-_mgen_library = pd.read_table(config["_mgen_library"], index_col="mgen_library_id")
-config["mgen_library"] = {}
-for mgen_library_id, row in _mgen_library.iterrows():
-    config["mgen_library"][mgen_library_id] = {}
-    config["mgen_library"][mgen_library_id]["r1"] = row["filename_r1"]
-    config["mgen_library"][mgen_library_id]["r2"] = row["filename_r2"]
+_mgen = pd.read_table(config["_mgen"], index_col="mgen_id")
+config["mgen"] = {}
+for mgen_id, row in _mgen.iterrows():
+    config["mgen"][mgen_id] = {}
+    config["mgen"][mgen_id]["r1"] = row["filename_r1"]
+    config["mgen"][mgen_id]["r2"] = row["filename_r2"]
 
-_mgen_library_group = pd.read_table(config["_mgen_library_group"])
-config["mgen_library_group"] = {}
-for mgen_library_group, d in _mgen_library_group.groupby("mgen_library_group"):
-    config["mgen_library_group"][mgen_library_group] = d.mgen_library_id.tolist()
+_mgen_x_mgen_group = pd.read_table(config["_mgen_x_mgen_group"])
+config["mgen_group"] = {}
+for mgen_group, d in _mgen_x_mgen_group.groupby("mgen_group"):
+    config["mgen_group"][mgen_group] = d.mgen_id.tolist()
 
 
 # {{{2 Sub-pipelines
 
 
 include: "snake/local.smk"
-include: "snake/mgen_taxonomic.smk"
-include: "snake/mgen_functional.smk"
-include: "snake/mgen_preprocess.smk"
-include: "snake/rrs_taxonomic.smk"
 include: "snake/util.smk"
 include: "snake/general.smk"
 

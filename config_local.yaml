@@ -1,2 +1,3 @@
 # Put local config assignments here; e.g. the locations of databases.
 _DUMMY: 1
+jupyter_port: 8818

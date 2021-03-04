@@ -3,6 +3,13 @@ rule start_jupyter:
     params:
         port=config["jupyter_port"],
     shell:
+        "jupyter lab --port={params.port}"
+
+rule start_jupyternb:
+    threads: MAX_THREADS
+    params:
+        port=config["jupyter_port"],
+    shell:
         limit_numpy_procs + "jupyter notebook --config=nb/jupyter_notebook_config.py --notebook-dir=nb/ --port={params.port}"
 
 
