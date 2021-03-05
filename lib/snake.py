@@ -1,7 +1,5 @@
 alias_recipe = "ln -rs {input} {output}"
-alias_fmt = lambda input, output: alias_recipe.format(
-    input=input, output=output
-)
+alias_fmt = lambda input, output: alias_recipe.format(input=input, output=output)
 curl_recipe = "curl '{params.url}' > {output}"
 curl_unzip_recipe = "curl '{params.url}' | zcat > {output}"
 
@@ -25,8 +23,8 @@ independent_theano_compiledir = """
         """
 
 # Utility wildcard constrains
-noperiod_wc = '[^.]+'
-integer_wc = '[0-9]+'
-float_noperiod_wc = '[0-9]+(e[0-9]+)?'
-single_param_wc = '[^.-]+'
+noperiod_wc = "[^.]+"
+integer_wc = "[0-9]+"
+float_noperiod_wc = "[0-9]+(e[0-9]+)?"
+single_param_wc = "[^.-]+"
 params_wc = noperiod_wc

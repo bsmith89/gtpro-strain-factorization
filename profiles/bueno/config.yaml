@@ -5,6 +5,6 @@ resources: ['network_connections=3', 'mem_mb=250000']
 use-conda: true
 conda-frontend: 'mamba'
 use-singularity: true
-singularity-args: "--bind /pollard/shattuck0/ --bind /pollard/data/ --bind /pollard/home/bsmith"
-singularity-prefix: "/pollard/home/bsmith/.snakemake/singularity"
+singularity-args: "--bind /pollard/shattuck0/ --bind /pollard/data/ --bind /pollard/home/bsmith/ --bind /pollard/ucfmt/"
+singularity-prefix: '/pollard/home/bsmith/.snakemake/singularity'
 config: ['USE_CUDA=0', 'MAX_THREADS=24']

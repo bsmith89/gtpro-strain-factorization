@@ -4,7 +4,4 @@ __default__:
   procs: '{threads}'
   outdir: 'log'
   errdir: 'log'
-co_assemble_mgen:
-  walltime: 168:00:00
-  procs: 16
-  mem_mb: '{resources.pmem}'
+  extra_qsub_flags: ''

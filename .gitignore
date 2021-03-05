@@ -3,7 +3,9 @@
 *.swp
 .ipynb_checkpoints/
 *.pyc
+scripts/__pycache__/
 .bash_history
+.parallel
 .snakemake
 .conda
 .cache
@@ -17,6 +19,7 @@ raw
 ref
 data
 build
+sraw
 sdata
 smeta
 

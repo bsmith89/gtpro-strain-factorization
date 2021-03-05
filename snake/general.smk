@@ -8,11 +8,13 @@ rule find_genes:
         "data/{stem}.fn",
     threads: 12
     shell:
-        """
+        dd(
+            """
         cat {input} | parallel --gnu --plain -j {threads} --recstart '>' --pipe \
                 prodigal -m -q -g 11 -p meta -f gff \
             > {output}
         """
+        )
 
 
 rule convert_prodigal_gff_to_bed:
@@ -21,7 +23,8 @@ rule convert_prodigal_gff_to_bed:
     input:
         "{stem}.prodigal.gff",
     shell:
-        r"""
+        dd(
+            r"""
         cat {input} \
                 | awk -v OFS='\t' \
                         '/^#/ {{}} \
@@ -30,6 +33,7 @@ rule convert_prodigal_gff_to_bed:
                 | sort -k1,1n -k2,2n \
             > {output}
         """
+        )
 
 
 # Trivial conversion of lengths into a BED file format describing the
@@ -40,9 +44,11 @@ rule nlength_to_bed:
     input:
         "{stem}.nlength.tsv",
     shell:
-        """
+        dd(
+            """
         awk -v OFS='\\t' '{{print $1, "0", $2, $1, "0", "+"}}' {input} > {output}
         """
+        )
 
 
 rule fetch_prodigal_cds:
@@ -53,11 +59,13 @@ rule fetch_prodigal_cds:
         fn="{stem}.fn",
         fai="{stem}.fn.fai",
     shell:
-        """
+        dd(
+            """
         bedtools getfasta -name -fi {input.fn} -bed {input.bed} -s \
                 | awk -v FS=':' '/^>/{{print $1}} !/^>/{{print $0}}' \
             > {output}
         """
+        )
 
 
 rule translate_nucleotide_to_protein:
@@ -66,13 +74,15 @@ rule translate_nucleotide_to_protein:
     input:
         "{stem}.fn",
     shell:
-        r"""
+        dd(
+            r"""
         cat {input} \
                 | transeq -auto -filter -sformat1 fasta -table 11 -frame 1 -trim -stdout \
                 | sed 's:\(^>.*\)_1$:\1:' \
                 | sed 's:\*:x:g' \
             > {output}
         """
+        )
 
 
 rule denovo_align_fa:
@@ -90,9 +100,11 @@ rule hmmbuild:
     input:
         "{stem}.afa",
     shell:
-        """
+        dd(
+            """
         hmmbuild --amino --informat afa {output} {input}
         """
+        )
 
 
 rule infer_aa_phylogeny:
@@ -119,9 +131,11 @@ rule bowtie_index_build:
         mem_mb=int(200e3),
         pmem=int(200e3) // 12,
     shell:
-        """
+        dd(
+            """
         bowtie2-build --threads {threads} {input} {wildcards.stem}
         """
+        )
 
 
 ruleorder: bowtie_index_build > bowtie_index_build_from_gzipped
@@ -141,12 +155,14 @@ rule bowtie_index_build_from_gzipped:
         db=lambda w: f"{w.stem}",
     threads: 12
     shell:
-        """
+        dd(
+            """
         tmp=$(mktemp)
         echo $tmp
         zcat {input} > $tmp
         bowtie2-build --threads {threads} $tmp {params.db}
         """
+        )
 
 
 rule build_samtools_index:
@@ -183,9 +199,11 @@ rule make_diamond_db:
         "ref/{db}.fa",
     threads: MAX_THREADS
     shell:
-        """
+        dd(
+            """
         diamond makedb --threads {threads} --db ref/{wildcards.db} --in {input}
         """
+        )
 
 
 rule diamond_search_fn:
@@ -198,9 +216,11 @@ rule diamond_search_fn:
         db="ref/{db}",
     threads: MAX_THREADS
     shell:
-        """
+        dd(
+            """
         diamond blastx --threads {threads} --db {params.db} --query {input.fasta} > {output}
         """
+        )
 
 
 rule diamond_search_fa:
@@ -213,9 +233,11 @@ rule diamond_search_fa:
         db="ref/{db}",
     threads: MAX_THREADS
     shell:
-        """
+        dd(
+            """
         diamond blastp --threads {threads} --db {params.db} --query {input.fasta} > {output}
         """
+        )
 
 
 # TODO: Do I actually have to feed seqtk into diamond?  Surely diamond can read
@@ -232,8 +254,10 @@ rule diamond_search_fastq:
     resources:
         mem_mb=int(1.6e4),
         pmem=int(1.6e4) // 4,
+        walltime_hr=12,
     shell:
-        """
+        dd(
+            """
         tmpdir=$(mktemp -d)
         echo Using temporary directory $tmpdir for {output}
         seqtk seq -A {input.fasta} \
@@ -242,6 +266,7 @@ rule diamond_search_fastq:
                 | gzip -c \
             > {output}
         """
+        )
 
 
 rule hmmpress:
@@ -262,9 +287,11 @@ rule parse_hmmsearch_tblout:
     input:
         "data/{stem}.{model}-hmmer-{hmm_cutoff}.tblout",
     shell:
-        r"""
+        dd(
+            """
         grep -v '^#' {input} | sed 's:\s\+:\t:g' | cut -f1,3,6 > {output}
         """
+        )
 
 
 rule squeeze_alignment:
@@ -284,9 +311,11 @@ rule gblocks_afa:
         script="scripts/Gblocks.py",
         seq="{stem}.afa",
     shell:
-        """
+        dd(
+            """
         {input.script} < {input.seq} > {output}
         """
+        )
 
 
 rule count_seq_lengths_nucl:
@@ -296,9 +325,11 @@ rule count_seq_lengths_nucl:
         script="scripts/count_seq_lengths.py",
         seqs="{stem}.fn",
     shell:
-        r"""
+        dd(
+            """
         {input.script} {input.seqs} > {output}
         """
+        )
 
 
 rule count_seq_lengths_prot:
@@ -308,9 +339,11 @@ rule count_seq_lengths_prot:
         script="scripts/count_seq_lengths.py",
         seqs="{stem}.fa",
     shell:
-        r"""
+        dd(
+            """
         {input.script} {input.seqs} > {output}
         """
+        )
 
 
 # TODO: Figure out if 0M is the correct amount of overlap between edges.
@@ -332,9 +365,11 @@ rule gfa_to_fn:
     input:
         "{stem}.a-k{k}.gfa",
     shell:
-        """
+        dd(
+            """
         awk '/^S/{{print ">"$2"\\n"$3}}' < {input} > {output}
         """
+        )
 
 
 rule select_top_blastp_hits:
@@ -343,9 +378,11 @@ rule select_top_blastp_hits:
     input:
         "data/{stem}.{ref}-blastp.tsv",
     shell:
-        """
+        dd(
+            """
         sort -k1,1 -k12,12rn {input} | sort -k1,1 -u | sort -k2,2 > {output}
         """
+        )
 
 
 rule select_top_blastx_hits:
@@ -354,9 +391,11 @@ rule select_top_blastx_hits:
     input:
         "data/{stem}.{ref}-blastx.tsv",
     shell:
-        """
+        dd(
+            """
         sort -k1,1 -k12,12rn {input} | sort -k1,1 -u | sort -k2,2 > {output}
         """
+        )
 
 
 rule fetch_top_blastx_hits:
@@ -366,9 +405,11 @@ rule fetch_top_blastx_hits:
         tsv="data/{stem}.{ref}-blastx.top.tsv",
         fn="data/{stem}.fn",
     shell:
-        """
+        dd(
+            """
         seqtk subseq {input.fn} <(cut -f1 {input.tsv}) > {output}
         """
+        )
 
 
 rule fetch_top_blastp_hits:
@@ -378,6 +419,8 @@ rule fetch_top_blastp_hits:
         tsv="data/{stem}.{ref}-blastp.top.tsv",
         fa="data/{stem}.fa",
     shell:
-        """
+        dd(
+            """
         seqtk subseq {input.fa} <(cut -f1 {input.tsv}) > {output}
         """
+        )

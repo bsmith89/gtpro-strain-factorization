@@ -5,13 +5,6 @@ rule start_jupyter:
     shell:
         "jupyter lab --port={params.port}"
 
-rule start_jupyternb:
-    threads: MAX_THREADS
-    params:
-        port=config["jupyter_port"],
-    shell:
-        limit_numpy_procs + "jupyter notebook --config=nb/jupyter_notebook_config.py --notebook-dir=nb/ --port={params.port}"
-
 
 rule start_ipython:
     threads: MAX_THREADS
@@ -30,9 +23,11 @@ rule visualize_rulegraph:
     input:
         "Snakefile",
     shell:
-        """
+        dd(
+            """
         snakemake --rulegraph all > {output}
         """
+        )
 
 
 rule generate_report:
@@ -41,9 +36,11 @@ rule generate_report:
     input:
         "Snakefile",
     shell:
-        """
+        dd(
+            """
         snakemake --forceall --report {output} all
         """
+        )
 
 
 rule dot_to_pdf:
@@ -52,18 +49,24 @@ rule dot_to_pdf:
     input:
         "data/{stem}.dot",
     shell:
-        """
+        dd(
+            """
         dot -Tpdf < {input} > {output}
         """
+        )
 
 
-# rule processed_notebook_to_html:
-#     output: 'build/{stem}.ipynb.html'
-#     input: 'build/{stem}.ipynb'
-#     shell:
-#         """
-#         jupyter nbconvert -t html {input} {output}
-#         """
+rule processed_notebook_to_html:
+    output:
+        "build/{stem}.ipynb.html",
+    input:
+        "build/{stem}.ipynb",
+    shell:
+        dd(
+            """
+        jupyter nbconvert -t html {input} {output}
+        """
+        )
 
 
 rule query_db:
@@ -73,6 +76,8 @@ rule query_db:
         db="data/{db}.db",
         query="scripts/query/{query}.sql",
     shell:
-        """
+        dd(
+            """
         sqlite3 -header -separator '\t' {input.db} < {input.query} > {output}
         """
+        )

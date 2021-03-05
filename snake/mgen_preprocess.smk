@@ -65,21 +65,21 @@ ruleorder: alias_GRCh38_index_file > bowtie_index_build
 # It should always fail if actually run.
 rule dummy_raw_read_source:
     output:
-        "raw/mgen/{raw_library_filename}",
+        "raw/mgen/{raw_mgen_filename}",
     shell:
-        """
+        dd(
+            """
         echo Raw data file {output} does not exist on this computer.  This is a dummy rule.
         false
         """
+        )
 
 
 rule alias_raw_read_r1:
     output:
-        "sdata/{library}.m/{library}.m.r1.fq.gz",
+        "sdata/{mgen}.r1.fq.gz",
     input:
-        lambda wildcards: "raw/mgen/{}".format(
-            config["mgen_library"][wildcards.library]["r1"]
-        ),
+        lambda wildcards: "raw/mgen/{}".format(config["mgen"][wildcards.mgen]["r1"]),
     shell:
         alias_recipe
 
@@ -90,11 +90,9 @@ localrules:
 
 rule alias_raw_read_r2:
     output:
-        "sdata/{library}.m/{library}.m.r2.fq.gz",
+        "sdata/{mgen}.r2.fq.gz",
     input:
-        lambda wildcards: "raw/mgen/{}".format(
-            config["mgen_library"][wildcards.library]["r2"]
-        ),
+        lambda wildcards: "raw/mgen/{}".format(config["mgen"][wildcards.mgen]["r2"]),
     shell:
         alias_recipe
 
@@ -112,19 +110,18 @@ rule qc_raw_reads:
         directory("data/{group}.fastqc.d"),
     input:
         r1=lambda w: [
-            f"sdata/{library}.m/{library}.m.r1.fq.gz"
-            for library in config["mgen_library_group"][w.group]
+            f"sdata/{mgen}.r1.fq.gz" for mgen in config["mgen_group"][w.group]
         ],
         r2=lambda w: [
-            f"sdata/{library}.m/{library}.m.r2.fq.gz"
-            for library in config["mgen_library_group"][w.group]
+            f"sdata/{mgen}.r2.fq.gz" for mgen in config["mgen_group"][w.group]
         ],
     threads: MAX_THREADS
     shell:
-        """
-        mkdir -p {output}
+        dd(
+            """
         fastqc -t {threads} -o {output} {input}
         """
+        )
 
 
 rule qc_processed_reads:
@@ -132,29 +129,28 @@ rule qc_processed_reads:
         directory("data/{group}.proc.fastqc.d"),
     input:
         r1=lambda w: [
-            f"data/{library}.m/{library}.m.proc.r1.fq.gz"
-            for library in config["mgen_library_group"][w.group]
+            f"data/{mgen}.r1.proc.fq.gz" for mgen in config["mgen_group"][w.group]
         ],
         r2=lambda w: [
-            f"data/{library}.m/{library}.m.proc.r2.fq.gz"
-            for library in config["mgen_library_group"][w.group]
+            f"data/{mgen}.r2.proc.fq.gz" for mgen in config["mgen_group"][w.group]
         ],
     threads: MAX_THREADS
     shell:
-        """
-        mkdir -p {output}
+        dd(
+            """
         fastqc -t {threads} -o {output} {input}
         """
+        )
 
 
 rule deduplicate_reads:
     output:
-        r1=temp("sdata/{stem}.dedup.r1.fq.gz"),
-        r2=temp("sdata/{stem}.dedup.r2.fq.gz"),
+        r1=temp("sdata/{mgen}.r1.dedup.fq.gz"),
+        r2=temp("sdata/{mgen}.r2.dedup.fq.gz"),
     input:
         script="scripts/fastuniq_wrapper.sh",
-        r1="sdata/{stem}.r1.fq.gz",
-        r2="sdata/{stem}.r2.fq.gz",
+        r1="sdata/{mgen}.r1.fq.gz",
+        r2="sdata/{mgen}.r2.fq.gz",
     resources:
         mem_mb=80000,
     shell:
@@ -163,49 +159,53 @@ rule deduplicate_reads:
 
 rule trim_adapters:
     output:
-        fq=temp("sdata/{stem}.deadapt.{r}.fq.gz"),
+        fq=temp("sdata/{stem}.deadapt.fq.gz"),
     input:
         adapters="ref/illumina_adapters.fn",
-        fq="sdata/{stem}.{r}.fq.gz",
+        fq="sdata/{stem}.fq.gz",
     log:
-        "log/{stem}.scythe.{r}.log",
+        "log/{stem}.scythe.log",
     threads: 2
     shell:
-        """
+        dd(
+            """
         scythe -a {input.adapters} {input.fq} >{output.fq} 2>{log}
         ! grep -Fxq 'Blank FASTA header or sequence in adapters file.' {log}
         """
+        )
 
 
 rule quality_trim_reads:
     output:
-        r1=temp("sdata/{stem}.qtrim.r1.fq.gz"),
-        r2=temp("sdata/{stem}.qtrim.r2.fq.gz"),
-        r3=temp("sdata/{stem}.qtrim.r3.fq.gz"),
+        r1=temp("sdata/{mgen}.r1.{stem}.qtrim.fq.gz"),
+        r2=temp("sdata/{mgen}.r2.{stem}.qtrim.fq.gz"),
+        r3=temp("sdata/{mgen}.r3.{stem}.qtrim.fq.gz"),
     input:
-        r1="sdata/{stem}.r1.fq.gz",
-        r2="sdata/{stem}.r2.fq.gz",
+        r1="sdata/{mgen}.r1.{stem}.fq.gz",
+        r2="sdata/{mgen}.r2.{stem}.fq.gz",
     params:
         qual_type="sanger",
         qual_thresh=20,
     shell:
-        r"""
+        dd(
+            """
         sickle pe -t {params.qual_type} -q {params.qual_thresh} --gzip-output \
             --pe-file1 {input.r1} --pe-file2 {input.r2} \
             --output-pe1 {output.r1} --output-pe2 {output.r2} \
             --output-single {output.r3}
         """
+        )
 
 
 # NOTE: Input from sdata/ output to data/
 rule filter_out_host:
     output:
-        r1="data/{stem}.hfilt.r1.fq.gz",
-        r2="data/{stem}.hfilt.r2.fq.gz",
+        r1="data/{mgen}.r1.{stem}.hfilt.fq.gz",
+        r2="data/{mgen}.r2.{stem}.hfilt.fq.gz",
     input:
         script="scripts/filter_out_mapping_reads.sh",
-        r1="sdata/{stem}.r1.fq.gz",
-        r2="sdata/{stem}.r2.fq.gz",
+        r1="sdata/{mgen}.r1.{stem}.fq.gz",
+        r2="sdata/{mgen}.r2.{stem}.fq.gz",
         index=[
             "ref/GRCh38.1.bt2",
             "ref/GRCh38.2.bt2",
@@ -217,18 +217,20 @@ rule filter_out_host:
     params:
         index="ref/GRCh38",
     shell:
-        """
+        dd(
+            """
         {input.script} {params.index} {input.r1} {input.r2} {output.r1} {output.r2}
         """
+        )
 
 
 # NOTE: Hub-rule: Comment out this rule to reduce DAG-building time
 # once all libraries have been processed
 rule alias_cleaned_reads:
     output:
-        "data/{stem}.proc.{r}.fq.gz",
+        "data/{stem}.proc.fq.gz",
     input:
-        "data/{stem}.dedup.deadapt.qtrim.hfilt.{r}.fq.gz",
+        "data/{stem}.dedup.deadapt.qtrim.hfilt.fq.gz",
     shell:
         alias_recipe
 

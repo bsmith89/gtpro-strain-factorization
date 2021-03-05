@@ -12,17 +12,17 @@ CREATE TABLE sample
   , sample_notes
   );
 
-CREATE TABLE mgen_library
-  ( mgen_library_id PRIMARY KEY
+CREATE TABLE mgen
+  ( mgen_id PRIMARY KEY
   , sample_id REFERENCES sample(sample_id)
   , plate_number
   , plate_well
   , filename_r1
   , filename_r2
-  , mgen_library_notes
+  , mgen_notes
   );
 
-CREATE TABLE mgen_library_x_mgen_library_group
-  ( mgen_library_id REFERENCES mgen_library(mgen_library_id)
-  , mgen_library_group
+CREATE TABLE mgen_x_mgen_group
+  ( mgen_id REFERENCES mgen(mgen_id)
+  , mgen_group
   );
