@@ -45,7 +45,7 @@ wildcard_constraints:
 
 # {{{2 General Configuration
 
-container: 'docker://bsmith89/compbio@sha256:5755ae1efa04bbb4f7994fbcab55d3d386a35e44d4546c8a1c01c7a62d7270cb'
+container: 'docker://bsmith89/compbio@sha256:8f24ab95bf0dd6be8082f6afdb9446b6969b42d655fc9df5aaba2aa2b7f5fcd8'
 
 configfile: 'config.yaml'
 configfile: 'config_local.yaml'
@@ -92,6 +92,11 @@ rule initialize_project:
         '''
 
 rule start_jupyter:
+    params:
+        port=config['jupyter_port']
+    shell: 'jupyter lab --port={params.port}'
+
+rule start_jupyter_notebook:
     threads: MAX_THREADS
     params:
         port=config['jupyter_port']
