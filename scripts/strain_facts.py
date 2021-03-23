@@ -114,13 +114,19 @@ def model(
 
     with pyro.plate("position", g, dim=-1):
         with pyro.plate("strain", s, dim=-2):
-            gamma = pyro.sample("gamma", dist.Beta(gamma_hyper, gamma_hyper))
+            gamma = pyro.sample(
+                "gamma",
+                dist.RelaxedBernoulli(temperature=gamma_hyper, logits=0.0),
+            )
     # gamma.shape == (s, g)
 
     rho_hyper = pyro.sample("rho_hyper", dist.Gamma(rho0, 1.0))
     rho = pyro.sample(
         "rho",
-        dist.Dirichlet(torch.ones(s, dtype=dtype, device=device) * rho_hyper),
+        dist.RelaxedOneHotCategorical(
+            temperature=rho_hyper,
+            logits=torch.zeros(s, dtype=dtype, device=device),
+        ),
     )
 
     epsilon_hyper = pyro.sample("epsilon_hyper", dist.Beta(1.0, 1 / epsilon0))
@@ -128,7 +134,10 @@ def model(
     pi_hyper = pyro.sample("pi_hyper", dist.Gamma(pi0, 1.0))
 
     with pyro.plate("sample", n, dim=-1):
-        pi = pyro.sample("pi", dist.Dirichlet(rho * s * pi_hyper))
+        pi = pyro.sample(
+            "pi",
+            dist.RelaxedOneHotCategorical(temperature=pi_hyper, probs=rho),
+        )
         alpha = pyro.sample("alpha", dist.Gamma(alpha_hyper, 1.0)).unsqueeze(
             -1
         )
