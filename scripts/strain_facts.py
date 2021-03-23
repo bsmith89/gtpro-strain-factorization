@@ -19,6 +19,16 @@ from scipy.spatial.distance import pdist, squareform
 from sklearn.cluster import AgglomerativeClustering
 
 
+def as_torch(x, dtype=None, device=None):
+    # Cast inputs and set device
+    return torch.tensor(x, dtype=dtype, device=device)
+
+
+def as_torch_all(dtype=None, device=None, **kwargs):
+    # Cast inputs and set device
+    return {k: as_torch(kwargs[k], dtype=dtype, device=device) for k in kwargs}
+
+
 def rss(x, y):
     return np.sqrt(np.sum((x - y) ** 2))
 
@@ -31,7 +41,10 @@ def binary_entropy(p):
 def genotype_distance(x, y):
     x = x * 2 - 1
     y = y * 2 - 1
-    return ((x * y) ** 2 * ((x - y) / 2) ** 2).mean()
+    weight = (x * y) ** 2
+    dist = ((x - y) / 2) ** 2
+    wmean_dist = (weight * dist).sum() / (weight.sum())
+    return wmean_dist
 
 
 def plot_loss_history(loss_history):
@@ -145,25 +158,37 @@ def model(
 
 
 def conditioned_model(
-    model, data={}, dtype=torch.float32, device="cpu", **kwargs,
+    model,
+    data={},
+    dtype=torch.float32,
+    device="cpu",
+    **kwargs,
 ):
     data = {
         k: torch.tensor(v, dtype=dtype, device=device) for k, v in data.items()
     }
     return partial(
-        pyro.condition(model, data=data), dtype=dtype, device=device, **kwargs,
+        pyro.condition(model, data=data),
+        dtype=dtype,
+        device=device,
+        **kwargs,
     )
 
 
 def find_map(
     model,
+    init={},
     lag=10,
     stop_at=1.0,
     max_iter=int(1e5),
     learning_rate=1e-0,
     clip_norm=100.0,
 ):
-    guide = pyro.infer.autoguide.AutoLaplaceApproximation(model)
+    guide = pyro.infer.autoguide.AutoLaplaceApproximation(
+        model,
+        init_loc_fn=pyro.infer.autoguide.initialization.init_to_value(init),
+    )
+
     svi = pyro.infer.SVI(
         model,
         guide,
@@ -226,6 +251,58 @@ def find_map(
         )().items()
     }
     return mapest, np.array(history)
+
+
+def initialize_parameters_by_clustering_samples(
+    y, m, thresh, addition_strains_factor=0.5
+):
+    n, g = y.shape
+
+    sample_metagenotype = y + 1 / m + 2
+    geno_dist = squareform(
+        pdist(sample_metagenotype, metric=genotype_distance)
+    )
+
+    clust = pd.Series(
+        AgglomerativeClustering(
+            n_clusters=None,
+            affinity="precomputed",
+            linkage="complete",
+            distance_threshold=args.collapse,
+        )
+        .fit(geno_dist)
+        .labels_
+    )
+
+    y_total = (
+        pd.DataFrame(pd.DataFrame(y))
+        .groupby(clust, axis="columns")
+        .sum()
+        .values
+    )
+    m_total = (
+        pd.DataFrame(pd.DataFrame(m))
+        .groupby(clust, axis="columns")
+        .sum()
+        .values
+    )
+    clust_genotype = (y_total + 1) / (m_total + 2)
+    additional_haplotypes = addition_strains_factor * clust_genotype.shape[0]
+
+    init_genotype = pd.concat(
+        [
+            clust_genotype,
+            pd.DataFrame(np.ones((additional_haplotypes, g)) * 0.5),
+        ]
+    ).reset_index(drop=True)
+
+    s_init = init_genotype.shape[0]
+    init_frac = np.ones((n, s_init))
+    for i in range(n):
+        init_frac[i, clust[i]] = s_init - 1
+    init_frac /= init_frac.sum(1, keepdims=True)
+
+    return init_genotype, init_frac
 
 
 def parse_args(argv):
@@ -394,7 +471,9 @@ if __name__ == "__main__":
     npos = min(args.npos, npos_available)
     info(f"Randomly sampling {npos} positions.")
     position_ss = np.random.choice(
-        informative_positions, size=npos, replace=False,
+        informative_positions,
+        size=npos,
+        replace=False,
     )
 
     info("Filtering libraries.")
@@ -417,7 +496,17 @@ if __name__ == "__main__":
     m_ss = data_fit.sum("allele")
     n, g_ss = m_ss.shape
     y_obs_ss = data_fit.sel(allele="alt")
-    s = args.nstrains
+
+    info("Initializing parameter estimates based on clustering analysis.")
+    info("TODO: Info about clustering parameters.")
+    init_genotype, init_frac = initialize_parameters_by_clustering_samples(
+        y_obs_ss,
+        m_ss,
+        thresh=thresh,
+        additional_strains_factor=args.additional_nstrains,
+    )
+
+    s = init_genotype.shape[1]
     info(f"Model shape: n={n}, g={g_ss}, s={s}")
 
     info(
@@ -450,6 +539,12 @@ if __name__ == "__main__":
     info("Optimizing model parameters.")
     mapest1, history1 = find_map(
         model_fit,
+        init=as_torch_all(
+            gamma=init_genotype,
+            pi=init_frac,
+            dtype=torch.float32,
+            device=args.device,
+        ),
         lag=args.lag,
         stop_at=args.stop_at,
         learning_rate=args.learning_rate,
