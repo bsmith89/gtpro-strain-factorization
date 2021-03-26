@@ -11,7 +11,7 @@ conda-frontend: 'mamba'
 use-singularity: true
 singularity-args: "--bind /pollard/shattuck0/ --bind /pollard/data/ --bind /wynton/groups/pollard/bsmith-scratch"
 singularity-prefix: "/pollard/home/bsmith/.snakemake/singularity"
-config: ['MAX_THREADS=24', 'USE_CUDA=1']
+config: ['MAX_THREADS=24', 'USE_CUDA=1', "jupyter_port=8829"]
 cluster-config: 'profiles/qsub/cluster.yaml'
 jobscript: 'profiles/qsub/jobscript.sh'
 drmaa: " -cwd \
