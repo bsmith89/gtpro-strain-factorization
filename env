@@ -5,11 +5,20 @@ then
     source ./env_local
 fi
 
-alias smake="snakemake --profile profiles/default"
-alias smake-qsub="snakemake --profile profiles/qsub"
-alias smake-xargs="xargs snakemake --profile profiles/default"
-alias smake-qsub-xargs="xargs snakemake --profile profiles/qsub"
-alias smake-qsub-gpu-test="snakemake --profile profiles/qsub-gpu-test"
-
 `snakemake --bash-completion`  # Should be: complete -o bashdefault -C snakemake-bash-completion snakemake
+
+# Aliases for each profile
+for dir in `ls -d profiles/*/`
+do
+    profile=$(basename $dir)
+    alias smake-$profile="snakemake --profile profiles/${profile}"
+    complete -o bashdefault -C snakemake-bash-completion smake-${profile}
+    alias smake-$profile-xargs="xargs snakemake --profile profiles/${profile}"
+    complete -o bashdefault -C snakemake-bash-completion smake-${profile}-xargs
+done
+
+# Extra-convenient alias for the default profile
+alias smake="snakemake --profile profiles/default"
 complete -o bashdefault -C snakemake-bash-completion smake
+alias smake-xargs="xargs snakemake --profile profiles/default"
+complete -o bashdefault -C snakemake-bash-completion smake-xargs
