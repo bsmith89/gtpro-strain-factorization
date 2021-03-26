@@ -45,7 +45,7 @@ wildcard_constraints:
 
 # {{{2 General Configuration
 
-container: 'docker://bsmith89/compbio@sha256:8f24ab95bf0dd6be8082f6afdb9446b6969b42d655fc9df5aaba2aa2b7f5fcd8'
+container: 'docker://bsmith89/compbio@sha256:82e4cd0171e7b8ff9851108aeb625abfce6a0dcb1d3364f6af58c339ec560c6c'
 
 configfile: 'config.yaml'
 configfile: 'config_local.yaml'
