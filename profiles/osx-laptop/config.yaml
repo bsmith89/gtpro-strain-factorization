@@ -1,0 +1,7 @@
+notemp: true
+printshellcmds: false
+keep-going: true
+resources: ['network_connections=3', 'mem_mb=250000']
+use-conda: true
+conda-frontend: 'mamba'
+config: ['USE_CUDA=0', 'MAX_THREADS=24', 'jupyter_port=8818']
