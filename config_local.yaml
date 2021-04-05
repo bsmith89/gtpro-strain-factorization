@@ -2,3 +2,4 @@
 _DUMMY: 1
 gtpro_db_src: '/pollard/data/gt-pro-db'
 gtpro_db_stem: '20190723_881species_'
+jupyter_port: 8818

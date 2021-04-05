@@ -9,7 +9,7 @@ default-resources: ['pmem=8192', 'mem_mb=8192', 'disk_mb=100000', 'walltime_hr=0
 use-conda: true
 conda-frontend: 'mamba'
 use-singularity: true
-singularity-args: "--bind /pollard/shattuck0/ --bind /pollard/data/ --bind /wynton/groups/pollard/bsmith-scratch"
+singularity-args: "--bind /pollard/shattuck0/ --bind /pollard/data/ --bind /pollard/home/bsmith/ --bind /wynton/group/pollard/bsmith-scratch/ --bind /scratch/"
 singularity-prefix: "/pollard/home/bsmith/.snakemake/singularity"
 config: ['MAX_THREADS=24', 'USE_CUDA=1', "jupyter_port=8829"]
 cluster-config: 'profiles/qsub/cluster.yaml'
