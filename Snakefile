@@ -3,7 +3,7 @@
 # {{{2 Imports
 
 from lib.snake import alias_recipe
-from lib.util import idxwhere
+from lib.pandas import idxwhere
 import pandas as pd
 
 # {{{2 Constants
