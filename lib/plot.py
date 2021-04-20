@@ -298,14 +298,14 @@ def boxplot_with_points(
 
     data_kwargs = dict(data=data, x=x, y=y, hue=hue, **kwargs)
 
-    distkw = data_kwargs.copy()
-    distkw.update(dict(showfliers=False, ax=ax, saturation=0.35))
+    distkw = dict(showfliers=False, ax=ax, saturation=0.35, whis=0)
+    distkw.update(data_kwargs)
     distkw.update(dist_kwargs)
     dist_plotter(**distkw)
     handles, labels = ax.get_legend_handles_labels()
 
-    pointskw = data_kwargs.copy()
-    pointskw.update(dict(dodge=True, linewidth=1, ax=ax))
+    pointskw = dict(dodge=True, linewidth=1, ax=ax)
+    pointskw.update(data_kwargs)
     pointskw.update(points_kwargs)
     points_plotter(**pointskw)
     if legend:
