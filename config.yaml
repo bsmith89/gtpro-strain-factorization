@@ -1,4 +1,4 @@
-container: 'docker://bsmith89/compbio@sha256:2e879db4452e09d3b2a23c8000caeaef13259648b1bcc5ed4e8d1f7a0ed1148d'
+container: 'docker://bsmith89/compbio@sha256:682b68a19fced6b97bae01f643109284e2788ad2293e2d94c706faf2d1d67ff9'
 
 _library: 'meta/library.tsv'
 _library_group: 'meta/library_group.tsv'
