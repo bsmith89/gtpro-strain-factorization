@@ -84,9 +84,10 @@ rule query_db:
 
 
 rule config_debug:
-    output: 'sdata/config_debug.{config_key}.flag'
+    output:
+        "sdata/config_debug.{config_key}.flag",
     params:
-        meta=lambda w: config[w.config_key]
+        meta=lambda w: config[w.config_key],
     shell:
         """
         echo {wildcards.config_key}

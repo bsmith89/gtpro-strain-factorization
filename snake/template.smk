@@ -1,6 +1,8 @@
 rule initialize_project:
     input:
-        local_config_files=[ancient(p) for p in ["config_local.yaml", "env_local", "snake/local.smk"]],
+        local_config_files=[
+            ancient(p) for p in ["config_local.yaml", "env_local", "snake/local.smk"]
+        ],
     shell:
         dd(
             """
@@ -14,14 +16,23 @@ rule initialize_project:
         """
         )
 
+
 rule build_empty_local_config_yaml:
-    output:"config_local.yaml"
-    shell: "echo 'DUMMY_: 1' > {output}"
+    output:
+        "config_local.yaml",
+    shell:
+        "echo 'DUMMY_: 1' > {output}"
+
 
 rule build_empty_local_snakefile:
-    output:"snake/local.smk"
-    shell: "touch {output}"
+    output:
+        "snake/local.smk",
+    shell:
+        "touch {output}"
+
 
 rule build_empty_local_env:
-    output:"env_local"
-    shell: "touch {output}"
+    output:
+        "env_local",
+    shell:
+        "touch {output}"
