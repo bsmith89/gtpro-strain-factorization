@@ -22,6 +22,7 @@ build
 sraw
 sdata
 smeta
+fig
 
 local.smk
 env_local
