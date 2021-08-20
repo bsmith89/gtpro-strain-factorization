@@ -83,8 +83,9 @@ include: "snake/util.smk"
 include: "snake/general.smk"
 if path.exists("snake/local.smk"):
     include: "snake/local.smk"
-include: "snake/mgen_preprocess.smk"
 include: "snake/docs.smk"
+
+include: "snake/mgen_preprocess.smk"
 
 
 wildcard_constraints:
