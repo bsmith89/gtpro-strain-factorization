@@ -1,2 +1,3 @@
-mgen_id	mgen_group
-test_mgen_library	test_group
+"test_1	test",NULL
+"test_2	test",NULL
+NULL,"test_mgen_library	test_group"

@@ -1,2 +1,3 @@
-mgen_id	sample_id	plate_number	plate_well	filename_r1	filename_r2	mgen_library_notes
-test_mgen_library	test_sample			no-date/test_r1.fastq.gz	no-date/test_r2.fastq.gz	
+"test_1	test_1	mgen/test-data/test_1.r1.fq.gz	mgen/test-data/test_1.r2.fq.gz		",NULL
+"test_2	test_2	mgen/test-data/test_2.r1.fq.gz	mgen/test-data/test_2.r2.fq.gz		",NULL
+NULL,"test_mgen_library	test_sample			no-date/test_r1.fastq.gz	no-date/test_r2.fastq.gz	"
