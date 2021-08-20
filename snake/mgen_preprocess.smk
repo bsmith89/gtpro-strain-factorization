@@ -171,7 +171,7 @@ rule trim_adapters:
     shell:
         dd(
             """
-        scythe -a {input.adapters} {input.fq} >{output.fq} 2>{log}
+        scythe -a {input.adapters} {input.fq} 2>{log} | gzip -c > {output.fq}
         ! grep -Fxq 'Blank FASTA header or sequence in adapters file.' {log}
         """
         )
@@ -223,7 +223,7 @@ rule filter_out_host:
     shell:
         dd(
             """
-        {input.script} {params.index} {input.r1} {input.r2} {output.r1} {output.r2}
+        {input.script} {threads} {params.index} {input.r1} {input.r2} {output.r1} {output.r2}
         """
         )
 
