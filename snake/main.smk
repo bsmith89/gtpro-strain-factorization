@@ -16,6 +16,7 @@ import pandas as pd
 import math
 from itertools import product
 from textwrap import dedent as dd
+from scripts.build_db import DatabaseInput
 import os.path as path
 from warnings import warn
 
@@ -150,6 +151,7 @@ database_inputs = [
     # Metadata
     DatabaseInput("subject", "smeta/subject.tsv", True),
     DatabaseInput("sample", "meta/sample.tsv", True),
+    # Metagenomes
     DatabaseInput("mgen", "meta/mgen.tsv", True),
     DatabaseInput("mgen_x_mgen_group", "meta/mgen_x_mgen_group.tsv", True),
 ]
