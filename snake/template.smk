@@ -15,8 +15,10 @@ rule new_project:
 
 # Re-arrange some files that were used for template dev.
 rule initialize_files_from_template:
-    output: touch("build/initialize_files_from_template.flag")
-    shell: "ln -fs doc/notes.md README.md"
+    output:
+        touch("build/initialize_files_from_template.flag"),
+    shell:
+        "ln -fs doc/notes.md README.md"
 
 
 # Configure git so it's not pointing at the template.
