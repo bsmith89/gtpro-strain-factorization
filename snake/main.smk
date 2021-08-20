@@ -70,7 +70,7 @@ if path.exists(_mgen_x_mgen_group_meta):
     for mgen_group, d in _mgen_x_mgen_group.groupby("mgen_group"):
         config["mgen_group"][mgen_group] = d.mgen_id.tolist()
 else:
-    warn(dd("""
+    warn(dd(f"""
             Could not load config from `{_mgen_x_mgen_group_meta}`.
             Check that path is defined and file exists.
             """))
@@ -108,40 +108,6 @@ wildcard_constraints:
 rule all:
     input:
         ["sdata/database.db"],
-
-
-# {{{1 Checkpoint rules
-
-
-rule gather_all_mgen_read_pairs_from_mgen_group:
-    output:
-        touch("data/{group}.a.{stem}.ALL_MGEN_PAIRS.flag"),
-    input:
-        r1=lambda w: [
-            f"data/{mgen}.r1.{{stem}}" for mgen in config["mgen_group"][w.group]
-        ],
-        r2=lambda w: [
-            f"data/{mgen}.r2.{{stem}}" for mgen in config["mgen_group"][w.group]
-        ],
-    shell:
-        "touch {output}"
-
-
-localrules:
-    gather_all_mgen_read_pairs_from_mgen_group,
-
-
-rule gather_all_mgen_from_mgen_group:
-    output:
-        touch("data/{group}.a.{stem}.ALL_MGEN.flag"),
-    input:
-        lambda w: [f"data/{mgen}.r.{{stem}}" for mgen in config["mgen_group"][w.group]],
-    shell:
-        "touch {output}"
-
-
-localrules:
-    gather_all_mgen_from_mgen_group,
 
 
 # {{{1 Database
