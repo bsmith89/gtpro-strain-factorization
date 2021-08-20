@@ -239,3 +239,39 @@ rule alias_cleaned_reads:
 
 localrules:
     alias_cleaned_reads,
+
+
+# {{{1 Checkpoint rules
+# NOTE: These may be useful for other parts of the workflow besides
+# just pre-processing.
+
+
+rule gather_all_mgen_read_pairs_from_mgen_group:
+    output:
+        touch("data/{group}.a.{stem}.ALL_MGEN_PAIRS.flag"),
+    input:
+        r1=lambda w: [
+            f"data/{mgen}.r1.{{stem}}" for mgen in config["mgen_group"][w.group]
+        ],
+        r2=lambda w: [
+            f"data/{mgen}.r2.{{stem}}" for mgen in config["mgen_group"][w.group]
+        ],
+    shell:
+        "touch {output}"
+
+
+localrules:
+    gather_all_mgen_read_pairs_from_mgen_group,
+
+
+rule gather_all_mgen_from_mgen_group:
+    output:
+        touch("data/{group}.a.{stem}.ALL_MGEN.flag"),
+    input:
+        lambda w: [f"data/{mgen}.r.{{stem}}" for mgen in config["mgen_group"][w.group]],
+    shell:
+        "touch {output}"
+
+
+localrules:
+    gather_all_mgen_from_mgen_group,
