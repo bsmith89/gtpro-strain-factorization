@@ -220,6 +220,7 @@ rule filter_out_host:
         ],
     params:
         index="ref/GRCh38",
+    threads: 8
     shell:
         dd(
             """
