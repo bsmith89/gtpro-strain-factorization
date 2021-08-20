@@ -119,6 +119,7 @@ rule qc_raw_reads:
     shell:
         dd(
             """
+        mkdir -p {output}
         fastqc -t {threads} -o {output} {input}
         """
         )
@@ -138,6 +139,7 @@ rule qc_processed_reads:
     shell:
         dd(
             """
+        mkdir -p {output}
         fastqc -t {threads} -o {output} {input}
         """
         )

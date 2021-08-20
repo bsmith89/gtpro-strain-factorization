@@ -16,9 +16,7 @@ import pandas as pd
 import math
 from itertools import product
 from textwrap import dedent as dd
-from scripts.build_db import DatabaseInput
 import os.path as path
-from warnings import warn
 
 # {{{1 Configuration
 
