@@ -11,6 +11,6 @@
 
 set -euo pipefail
 
-bowtie2 -x "$1" -1 "$2" -2 "$3" \
+bowtie2 --threads $1 --mm -x "$2" -1 "$3" -2 "$4" \
     | samtools view -f 12 -O BAM \
-    | samtools fastq -1 "$4" -2 "$5" -
+    | samtools fastq -1 "$5" -2 "$6" -
