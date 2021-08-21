@@ -85,7 +85,7 @@ rule query_db:
 
 rule config_debug:
     output:
-        "sdata/config_debug.{config_key}.flag",
+        "config_debug.{config_key}",
     params:
         meta=lambda w: config[w.config_key],
     shell:
