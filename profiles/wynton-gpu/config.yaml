@@ -1,0 +1,10 @@
+notemp: true
+printshellcmds: false
+keep-going: true
+resources: ['network_connections=3', 'mem_mb=250000']
+use-conda: true
+conda-frontend: 'mamba'
+use-singularity: true
+singularity-args: "--bind /pollard/shattuck0/ --bind /pollard/data/ --bind /pollard/home/bsmith --bind /usr/local/cuda-10.1 --nv"
+singularity-prefix: "/pollard/home/bsmith/.snakemake/singularity"
+config: ['USE_CUDA=1', 'MAX_THREADS=24', 'jupyter_port=8826']
