@@ -13,6 +13,8 @@ scripts/__pycache__/
 .jupyter
 .local
 .theano
+.nv
+.wget-hsts
 
 log
 raw
