@@ -155,6 +155,7 @@ rule deduplicate_reads:
         r2="{stemA}.r2{stemB}fq.gz",
     resources:
         mem_mb=80000,
+        walltime_hr=4,
     shell:
         "{input.script} {input.r1} {input.r2} {output.r1} {output.r2}"
 
@@ -168,6 +169,8 @@ rule trim_adapters:
     log:
         "log/{stem}.scythe.log",
     threads: 2
+    resources:
+        walltime_hr=2
     shell:
         dd(
             """
@@ -188,6 +191,8 @@ rule quality_trim_reads:
     params:
         qual_type="sanger",
         qual_thresh=20,
+    resources:
+        walltime_hr=3
     shell:
         dd(
             """
