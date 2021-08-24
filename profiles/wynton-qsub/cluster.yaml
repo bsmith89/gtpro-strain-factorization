@@ -2,6 +2,6 @@ __default__:
   walltime: '{resources.walltime_hr}:{resources.walltime_min}:{resources.walltime_sec}'
   pmem: '{resources.pmem}'
   procs: '{threads}'
-  outdir: 'log'
-  errdir: 'log'
+  outdir: 'qsub_log'
+  errdir: 'qsub_log'
   extra_qsub_flags: ''

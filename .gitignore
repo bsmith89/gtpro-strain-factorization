@@ -15,6 +15,7 @@ scripts/__pycache__/
 .theano
 
 log
+cluster_log
 raw
 ref
 data
