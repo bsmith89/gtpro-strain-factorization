@@ -27,8 +27,10 @@ from warnings import warn
 
 configfile: "config.yaml"
 
+
 local_config_path = "config_local.yaml"
 if path.exists(local_config_path):
+
     configfile: local_config_path
 
 
@@ -48,33 +50,41 @@ else:
 
 # {{{2 Data Configuration
 
-if "_mgen" in config and path.exists(config["_mgen"]):
-    _mgen = pd.read_table(config["_mgen"], index_col="mgen_id")
+_mgen_meta = "meta/mgen.tsv"
+if path.exists(_mgen_meta):
+    _mgen = pd.read_table(_mgen_meta, index_col="mgen_id")
     config["mgen"] = {}
     for mgen_id, row in _mgen.iterrows():
         config["mgen"][mgen_id] = {}
         config["mgen"][mgen_id]["r1"] = row["filename_r1"]
         config["mgen"][mgen_id]["r2"] = row["filename_r2"]
 else:
-    warn(dd("""
-            Could not load config from config["_mgen"].
+    warn(
+        dd(
+            f"""
+            Could not load config from `{_mgen_meta}`.
             Check that path is defined and file exists.
-            """))
+            """
+        )
+    )
     config["mgen"] = {}
 
-if "_mgen_x_mgen_group" in config and path.exists(config["_mgen_x_mgen_group"]):
-    _mgen_x_mgen_group = pd.read_table(config["_mgen_x_mgen_group"])
+_mgen_x_mgen_group_meta = "meta/mgen_x_mgen_group.tsv"
+if path.exists(_mgen_x_mgen_group_meta):
+    _mgen_x_mgen_group = pd.read_table(_mgen_x_mgen_group_meta)
     config["mgen_group"] = {}
     for mgen_group, d in _mgen_x_mgen_group.groupby("mgen_group"):
         config["mgen_group"][mgen_group] = d.mgen_id.tolist()
 else:
-    warn(dd("""
-            Could not load config from config["_mgen_x_mgen_group"].
+    warn(
+        dd(
+            f"""
+            Could not load config from `{_mgen_x_mgen_group_meta}`.
             Check that path is defined and file exists.
-            """))
+            """
+        )
+    )
     config["mgen_group"] = {}
-
-
 
 # {{{2 Sub-pipelines
 
@@ -83,8 +93,15 @@ include: "snake/template.smk"
 include: "snake/util.smk"
 include: "snake/general.smk"
 include: "snake/gtpro.smk"
+
+
 if path.exists("snake/local.smk"):
+
     include: "snake/local.smk"
+
+
+include: "snake/docs.smk"
+include: "snake/mgen_preprocess.smk"
 
 
 wildcard_constraints:
@@ -108,40 +125,6 @@ rule all:
         ["sdata/database.db"],
 
 
-# {{{1 Checkpoint rules
-
-
-rule gather_all_mgen_read_pairs_from_mgen_group:
-    output:
-        touch("data/{group}.a.{stem}.ALL_MGEN_PAIRS.flag"),
-    input:
-        r1=lambda w: [
-            f"data/{mgen}.r1.{{stem}}" for mgen in config["mgen_group"][w.group]
-        ],
-        r2=lambda w: [
-            f"data/{mgen}.r2.{{stem}}" for mgen in config["mgen_group"][w.group]
-        ],
-    shell:
-        "touch {output}"
-
-
-localrules:
-    gather_all_mgen_read_pairs_from_mgen_group,
-
-
-rule gather_all_mgen_from_mgen_group:
-    output:
-        touch("data/{group}.a.{stem}.ALL_MGEN.flag"),
-    input:
-        lambda w: [f"data/{mgen}.r.{{stem}}" for mgen in config["mgen_group"][w.group]],
-    shell:
-        "touch {output}"
-
-
-localrules:
-    gather_all_mgen_from_mgen_group,
-
-
 # {{{1 Database
 
 
@@ -149,6 +132,7 @@ database_inputs = [
     # Metadata
     DatabaseInput("subject", "smeta/subject.tsv", True),
     DatabaseInput("sample", "meta/sample.tsv", True),
+    # Metagenomes
     DatabaseInput("mgen", "meta/mgen.tsv", True),
     DatabaseInput("mgen_x_mgen_group", "meta/mgen_x_mgen_group.tsv", True),
 ]

@@ -79,7 +79,7 @@ rule alias_raw_read_r1:
     output:
         "sdata/{mgen}.r1.fq.gz",
     input:
-        lambda wildcards: "raw/mgen/{}".format(config["mgen"][wildcards.mgen]["r1"]),
+        lambda wildcards: "sraw/mgen/{}".format(config["mgen"][wildcards.mgen]["r1"]),
     shell:
         alias_recipe
 
@@ -92,7 +92,7 @@ rule alias_raw_read_r2:
     output:
         "sdata/{mgen}.r2.fq.gz",
     input:
-        lambda wildcards: "raw/mgen/{}".format(config["mgen"][wildcards.mgen]["r2"]),
+        lambda wildcards: "sraw/mgen/{}".format(config["mgen"][wildcards.mgen]["r2"]),
     shell:
         alias_recipe
 
@@ -107,7 +107,7 @@ localrules:
 
 rule qc_raw_reads:
     output:
-        directory("data/{group}.fastqc.d"),
+        directory("data/{group}.a.fastqc.d"),
     input:
         r1=lambda w: [
             f"sdata/{mgen}.r1.fq.gz" for mgen in config["mgen_group"][w.group]
@@ -119,6 +119,7 @@ rule qc_raw_reads:
     shell:
         dd(
             """
+        mkdir -p {output}
         fastqc -t {threads} -o {output} {input}
         """
         )
@@ -126,7 +127,7 @@ rule qc_raw_reads:
 
 rule qc_processed_reads:
     output:
-        directory("data/{group}.proc.fastqc.d"),
+        directory("data/{group}.a.proc.fastqc.d"),
     input:
         r1=lambda w: [
             f"data/{mgen}.r1.proc.fq.gz" for mgen in config["mgen_group"][w.group]
@@ -138,6 +139,7 @@ rule qc_processed_reads:
     shell:
         dd(
             """
+        mkdir -p {output}
         fastqc -t {threads} -o {output} {input}
         """
         )
@@ -145,31 +147,34 @@ rule qc_processed_reads:
 
 rule deduplicate_reads:
     output:
-        r1=temp("sdata/{mgen}.r1.dedup.fq.gz"),
-        r2=temp("sdata/{mgen}.r2.dedup.fq.gz"),
+        r1=temp("{stemA}.r1{stemB}dedup.fq.gz"),
+        r2=temp("{stemA}.r2{stemB}dedup.fq.gz"),
     input:
         script="scripts/fastuniq_wrapper.sh",
-        r1="sdata/{mgen}.r1.fq.gz",
-        r2="sdata/{mgen}.r2.fq.gz",
+        r1="{stemA}.r1{stemB}fq.gz",
+        r2="{stemA}.r2{stemB}fq.gz",
     resources:
         mem_mb=80000,
+        walltime_hr=4,
     shell:
         "{input.script} {input.r1} {input.r2} {output.r1} {output.r2}"
 
 
 rule trim_adapters:
     output:
-        fq=temp("sdata/{stem}.deadapt.fq.gz"),
+        fq=temp("{stem}.deadapt.fq.gz"),
     input:
         adapters="ref/illumina_adapters.fn",
-        fq="sdata/{stem}.fq.gz",
+        fq="{stem}.fq.gz",
     log:
         "log/{stem}.scythe.log",
     threads: 2
+    resources:
+        walltime_hr=2
     shell:
         dd(
             """
-        scythe -a {input.adapters} {input.fq} >{output.fq} 2>{log}
+        scythe -a {input.adapters} {input.fq} 2>{log} | gzip -c > {output.fq}
         ! grep -Fxq 'Blank FASTA header or sequence in adapters file.' {log}
         """
         )
@@ -177,15 +182,17 @@ rule trim_adapters:
 
 rule quality_trim_reads:
     output:
-        r1=temp("sdata/{mgen}.r1.{stem}.qtrim.fq.gz"),
-        r2=temp("sdata/{mgen}.r2.{stem}.qtrim.fq.gz"),
-        r3=temp("sdata/{mgen}.r3.{stem}.qtrim.fq.gz"),
+        r1=temp("{stemA}.r1.{stemB}.qtrim.fq.gz"),
+        r2=temp("{stemA}.r2.{stemB}.qtrim.fq.gz"),
+        r3=temp("{stemA}.r3.{stemB}.qtrim.fq.gz"),
     input:
-        r1="sdata/{mgen}.r1.{stem}.fq.gz",
-        r2="sdata/{mgen}.r2.{stem}.fq.gz",
+        r1="{stemA}.r1.{stemB}.fq.gz",
+        r2="{stemA}.r2.{stemB}.fq.gz",
     params:
         qual_type="sanger",
         qual_thresh=20,
+    resources:
+        walltime_hr=3
     shell:
         dd(
             """
@@ -198,14 +205,16 @@ rule quality_trim_reads:
 
 
 # NOTE: Input from sdata/ output to data/
+# NOTE: Had to drop periods on either side of {stem} to account for
+# NULL case.
 rule filter_out_host:
     output:
-        r1="data/{mgen}.r1.{stem}.hfilt.fq.gz",
-        r2="data/{mgen}.r2.{stem}.hfilt.fq.gz",
+        r1="data/{mgen}.r1{stem}hfilt.fq.gz",
+        r2="data/{mgen}.r2{stem}hfilt.fq.gz",
     input:
         script="scripts/filter_out_mapping_reads.sh",
-        r1="sdata/{mgen}.r1.{stem}.fq.gz",
-        r2="sdata/{mgen}.r2.{stem}.fq.gz",
+        r1="sdata/{mgen}.r1{stem}fq.gz",
+        r2="sdata/{mgen}.r2{stem}fq.gz",
         index=[
             "ref/GRCh38.1.bt2",
             "ref/GRCh38.2.bt2",
@@ -216,10 +225,11 @@ rule filter_out_host:
         ],
     params:
         index="ref/GRCh38",
+    threads: 8
     shell:
         dd(
             """
-        {input.script} {params.index} {input.r1} {input.r2} {output.r1} {output.r2}
+        {input.script} {threads} {params.index} {input.r1} {input.r2} {output.r1} {output.r2}
         """
         )
 
@@ -230,10 +240,46 @@ rule alias_cleaned_reads:
     output:
         "data/{stem}.proc.fq.gz",
     input:
-        "data/{stem}.dedup.deadapt.qtrim.hfilt.fq.gz",
+        "data/{stem}.hfilt.dedup.deadapt.qtrim.fq.gz",
     shell:
         alias_recipe
 
 
 localrules:
     alias_cleaned_reads,
+
+
+# {{{1 Checkpoint rules
+# NOTE: These may be useful for other parts of the workflow besides
+# just pre-processing.
+
+
+rule gather_all_mgen_read_pairs_from_mgen_group:
+    output:
+        touch("data/{group}.a.{stem}.ALL_MGEN_PAIRS.flag"),
+    input:
+        r1=lambda w: [
+            f"data/{mgen}.r1.{{stem}}" for mgen in config["mgen_group"][w.group]
+        ],
+        r2=lambda w: [
+            f"data/{mgen}.r2.{{stem}}" for mgen in config["mgen_group"][w.group]
+        ],
+    shell:
+        "touch {output}"
+
+
+localrules:
+    gather_all_mgen_read_pairs_from_mgen_group,
+
+
+rule gather_all_mgen_from_mgen_group:
+    output:
+        touch("data/{group}.a.{stem}.ALL_MGEN.flag"),
+    input:
+        lambda w: [f"data/{mgen}.r.{{stem}}" for mgen in config["mgen_group"][w.group]],
+    shell:
+        "touch {output}"
+
+
+localrules:
+    gather_all_mgen_from_mgen_group,

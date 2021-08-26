@@ -81,3 +81,16 @@ rule query_db:
         sqlite3 -header -separator '\t' {input.db} < {input.query} > {output}
         """
         )
+
+
+rule config_debug:
+    output:
+        "config_debug.{config_key}",
+    params:
+        meta=lambda w: config[w.config_key],
+    shell:
+        """
+        echo {wildcards.config_key}
+        echo {params.meta}
+        false  # Recipe never succeeds.
+        """

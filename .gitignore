@@ -17,6 +17,7 @@ scripts/__pycache__/
 .wget-hsts
 
 log
+cluster_log
 raw
 ref
 data
@@ -24,6 +25,7 @@ build
 sraw
 sdata
 smeta
+fig
 
 local.smk
 env_local

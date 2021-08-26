@@ -1,6 +1,1 @@
 container: 'docker://bsmith89/compbio@sha256:682b68a19fced6b97bae01f643109284e2788ad2293e2d94c706faf2d1d67ff9'
-
-_library: 'meta/library.tsv'
-_library_group: 'meta/library_group.tsv'
-_sample: 'meta/sample.tsv'
-_subject: 'meta/subject.tsv'
