@@ -240,7 +240,7 @@ rule alias_cleaned_reads:
     output:
         "data/{stem}.proc.fq.gz",
     input:
-        "data/{stem}.dedup.deadapt.qtrim.hfilt.fq.gz",
+        "data/{stem}.hfilt.dedup.deadapt.qtrim.fq.gz",
     shell:
         alias_recipe
 
